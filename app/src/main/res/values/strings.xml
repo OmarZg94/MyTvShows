@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">MyTvShows</string>
+
+    <string name="without_summary">Without summary</string>
 </resources>
