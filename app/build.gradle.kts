@@ -72,6 +72,8 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.google.dagger)
     kapt(libs.google.dagger.compiler)
+    implementation(libs.io.arrow.kt)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

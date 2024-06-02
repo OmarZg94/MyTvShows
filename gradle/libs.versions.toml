@@ -16,6 +16,7 @@ hiltVersion = "2.48"
 hiltNavigationCompose = "1.2.0"
 hiltCompiler = "1.2.0"
 okHttp = "4.12.0"
+arrowVersion = "1.0.1"
 
 [libraries]
 jetbrains-kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutinesVersion" }
@@ -44,6 +45,7 @@ squareup-okhttp3 = { group = "com.squareup.okhttp3", name = "okhttp", version.re
 squareup-okhttp3-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "okHttp"}
 google-dagger = { group = "com.google.dagger", name= "hilt-android", version.ref = "hiltVersion" }
 google-dagger-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hiltVersion" }
+io-arrow-kt = { group = "io.arrow-kt", name = "arrow-core", version.ref = "arrowVersion"}
 
 
 [plugins]

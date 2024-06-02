@@ -2,4 +2,6 @@
     <string name="app_name">MyTvShows</string>
 
     <string name="without_summary">Without summary</string>
+    <string name="unknown_error">Unknown Error</string>
+    <string name="error">Error: %s</string>
 </resources>
