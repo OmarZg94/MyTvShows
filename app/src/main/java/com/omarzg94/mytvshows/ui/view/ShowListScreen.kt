@@ -16,11 +16,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -65,6 +67,11 @@ fun ShowListScreen(onShowSelected: (Show) -> Unit) {
             TopAppBar(
                 modifier = Modifier.background(color = Color(0xFF121221)),
                 title = { Text(stringResource(id = R.string.schedule_title), color = Color.White) },
+                actions = {
+                    IconButton(onClick = { /* Handle search icon click */ }) {
+                        Icon(Icons.Default.DateRange, contentDescription = null, tint = Color.White)
+                    }
+                }
             )
         },
         snackbarHost = { SnackbarHost(snackBarHostState) },
