@@ -116,7 +116,7 @@ fun ShowListScreen(onShowSelected: (Show) -> Unit) {
                                     modifier = Modifier.padding(vertical = 8.dp)
                                 )
                             }
-                            items(nowShows) { show ->
+                            items(nowShows, key = { it.id }) { show ->
                                 ShowItem(show, onShowSelected)
                                 Spacer(modifier = Modifier.height(8.dp))
                             }
@@ -127,7 +127,7 @@ fun ShowListScreen(onShowSelected: (Show) -> Unit) {
                                     modifier = Modifier.padding(vertical = 8.dp)
                                 )
                             }
-                            items(nextShows) { show ->
+                            items(nextShows, key = { it.id }) { show ->
                                 ShowItem(show, onShowSelected)
                                 Spacer(modifier = Modifier.height(8.dp))
                             }
