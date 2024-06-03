@@ -5,5 +5,6 @@ data class Show(
     val name: String,
     val image: Image?,
     val summary: String?,
-    val schedule: Schedule
+    val schedule: Schedule,
+    val network: ShowNetwork?
 )

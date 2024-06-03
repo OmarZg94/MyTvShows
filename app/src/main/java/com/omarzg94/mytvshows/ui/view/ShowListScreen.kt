@@ -1,6 +1,5 @@
 package com.omarzg94.mytvshows.ui.view
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,7 +21,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -93,8 +91,16 @@ fun ShowListScreen(onShowSelected: (Show) -> Unit) {
 
                     is UiState.Success -> {
                         val episodes = (schedule as UiState.Success<List<Episode>>).data
+                        val queryFilter =
+                            if (query.isNotBlank())
+                                episodes.filter {
+                                    it.show.name.lowercase().contains(
+                                        query.lowercase().trim()
+                                    ) || (it.show.network != null && it.show.network.name.lowercase()
+                                        .contains(query.lowercase().trim()))
+                                } else episodes
                         val (nowShows, nextShows) = segmentShowsByTime(
-                            episodes.filter {
+                            queryFilter.filter {
                                 it.runtime != null && it.airtime.isNotBlank()
                             }
                         )
