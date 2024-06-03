@@ -33,13 +33,16 @@ fun ShowDetailScreen(showId: Int) {
     val scope = rememberCoroutineScope()
     val showViewModel: ShowViewModel = hiltViewModel()
     val selectedShow by showViewModel.selectedShow.collectAsState()
-    val snackBarHostState = remember{ SnackbarHostState() }
+    val snackBarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(showId) {
         showViewModel.fetchShowDetails(showId)
     }
 
     Scaffold(
+        topBar = {
+
+        },
         snackbarHost = { SnackbarHost(snackBarHostState) },
         content = {
             when (selectedShow) {
@@ -51,6 +54,7 @@ fun ShowDetailScreen(showId: Int) {
                         CircularProgressIndicator()
                     }
                 }
+
                 is UiState.Success -> {
                     val show = (selectedShow as UiState.Success).data
                     Column(
@@ -60,12 +64,16 @@ fun ShowDetailScreen(showId: Int) {
                     ) {
                         Text(text = show.name, style = MaterialTheme.typography.headlineMedium)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(text = show.summary ?: stringResource(id = R.string.without_summary), style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            text = show.summary ?: stringResource(id = R.string.without_summary),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
                     }
                 }
+
                 is UiState.Error -> {
                     val error = selectedShow as UiState.Error
-                    val errorMessage = stringResource(id = R.string.error,error.message)
+                    val errorMessage = stringResource(id = R.string.error, error.message)
                     scope.launch {
                         snackBarHostState.showSnackbar(errorMessage)
                     }

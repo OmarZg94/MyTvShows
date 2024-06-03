@@ -37,6 +37,8 @@ android {
     }
     kotlinOptions {
         jvmTarget = "1.8"
+        allWarningsAsErrors = false
+        freeCompilerArgs += listOf("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
     }
     buildFeatures {
         compose = true
@@ -73,6 +75,7 @@ dependencies {
     implementation(libs.google.dagger)
     kapt(libs.google.dagger.compiler)
     implementation(libs.io.arrow.kt)
+    implementation(libs.io.coil.kt)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

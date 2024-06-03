@@ -1,6 +1,11 @@
 <resources>
     <string name="app_name">MyTvShows</string>
 
+    <string name="schedule_title">TV Listings</string>
+    <string name="schedule_search_bar_hint">Search for a show or channel</string>
+    <string name="schedule_now">Now</string>
+    <string name="schedule_next">Next</string>
+
     <string name="without_summary">Without summary</string>
     <string name="unknown_error">Unknown Error</string>
     <string name="error">Error: %s</string>

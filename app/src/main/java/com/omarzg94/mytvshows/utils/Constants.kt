@@ -11,4 +11,8 @@ object Constants {
     const val PAYMENT_REQUIRED = "Payment Required"
     const val FORBIDDEN = "Forbidden"
     const val NOT_FOUND = "Not Found"
+    const val METHOD_NOT_ALLOWED = "Method Not Allowed"
+    const val REQUEST_TIMEOUT = "Request Timeout"
+    const val INTERNAL_SERVER_ERROR = "Internal Server Error"
+    const val SERVICE_UNAVAILABLE = "Service Unavailable"
 }

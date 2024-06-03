@@ -1,6 +1,7 @@
 package com.omarzg94.mytvshows.repository
 
 import arrow.core.Either
+import com.omarzg94.mytvshows.data.model.Episode
 import com.omarzg94.mytvshows.data.model.NetworkResult
 import com.omarzg94.mytvshows.data.model.Show
 import com.omarzg94.mytvshows.data.network.TvMazeService
@@ -10,7 +11,7 @@ import javax.inject.Inject
 class ShowRepository @Inject constructor(
     private val tvMazeService: TvMazeService
 ) {
-    suspend fun getSchedule(): Either<NetworkResult.Error, NetworkResult.Success<List<Show>>> {
+    suspend fun getSchedule(): Either<NetworkResult.Error, NetworkResult.Success<List<Episode>>> {
         return try {
             val response = tvMazeService.getSchedule()
             if (response.isSuccessful) {
