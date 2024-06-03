@@ -3,6 +3,7 @@ package com.omarzg94.mytvshows.ui.view
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,6 +19,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -31,7 +33,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,6 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -55,97 +61,130 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun ShowListScreen(onShowSelected: (Show) -> Unit) {
+fun ShowListScreen() {
     val scope = rememberCoroutineScope()
     val showViewModel: ShowViewModel = hiltViewModel()
     val schedule by showViewModel.schedule.collectAsState()
+    val scaffoldState = rememberBottomSheetScaffoldState(
+        bottomSheetState = rememberStandardBottomSheetState(skipHiddenState = false)
+    )
     val snackBarHostState = remember { SnackbarHostState() }
     var query by remember { mutableStateOf("") }
+    var selectedShow by remember { mutableStateOf<Show?>(null) }
 
-    Scaffold(
+    BottomSheetScaffold(
+        scaffoldState = scaffoldState,
+        snackbarHost = { SnackbarHost(snackBarHostState) },
         topBar = {
             TopAppBar(
                 modifier = Modifier.background(color = Color(0xFF121221)),
                 title = { Text(stringResource(id = R.string.schedule_title), color = Color.White) },
                 actions = {
-                    IconButton(onClick = { /* Handle search icon click */ }) {
+                    IconButton(onClick = { /* Handle calendar icon click */ }) {
                         Icon(Icons.Default.DateRange, contentDescription = null, tint = Color.White)
                     }
                 }
             )
         },
-        snackbarHost = { SnackbarHost(snackBarHostState) },
-        content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .background(color = Color(0xFF121221))
-            ) {
-                SearchBar(
-                    query = query,
-                    onQueryChanged = { query = it }
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                when (schedule) {
-                    is UiState.Loading -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(color = Color.White)
-                        }
-                    }
-
-                    is UiState.Success -> {
-                        val episodes = (schedule as UiState.Success<List<Episode>>).data
-                        val queryFilter =
-                            if (query.isNotBlank())
-                                episodes.filter {
-                                    it.show.name.lowercase().contains(
-                                        query.lowercase().trim()
-                                    ) || (it.show.network != null && it.show.network.name.lowercase()
-                                        .contains(query.lowercase().trim()))
-                                } else episodes
-                        val (nowShows, nextShows) = segmentShowsByTime(
-                            queryFilter.filter {
-                                it.runtime != null && it.airtime.isNotBlank()
-                            }
-                        )
-                        LazyColumn(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(horizontal = 16.dp)
-                        ) {
-                            item {
-                                Text(
-                                    stringResource(id = R.string.schedule_now),
-                                    style = MaterialTheme.typography.headlineMedium.copy(color = Color.White),
-                                    modifier = Modifier.padding(vertical = 8.dp)
-                                )
-                            }
-                            items(nowShows, key = { it.id }) { show ->
-                                ShowItem(show, onShowSelected)
-                                Spacer(modifier = Modifier.height(8.dp))
-                            }
-                            item {
-                                Text(
-                                    stringResource(id = R.string.schedule_next),
-                                    style = MaterialTheme.typography.headlineMedium.copy(color = Color.White),
-                                    modifier = Modifier.padding(vertical = 8.dp)
-                                )
-                            }
-                            items(nextShows, key = { it.id }) { show ->
-                                ShowItem(show, onShowSelected)
-                                Spacer(modifier = Modifier.height(8.dp))
-                            }
-                        }
-                    }
-
-                    is UiState.Error -> {
-                        val error = schedule as UiState.Error
-                        val errorMessage = stringResource(id = R.string.error, error.message)
+        sheetContent = {
+            selectedShow?.let {
+                ShowDetailContent(it)
+            }
+        },
+        sheetPeekHeight = 0.dp,
+        content = {
+            Scaffold(modifier = Modifier
+                .padding(it)
+                .pointerInput(Unit) {
+                    detectTapGestures(onTap = {
                         scope.launch {
-                            snackBarHostState.showSnackbar(errorMessage)
+                            if (scaffoldState.bottomSheetState.isVisible) {
+                                scaffoldState.bottomSheetState.hide()
+                            }
+                        }
+                    })
+                }) { paddingValues ->
+                Column(
+                    modifier = Modifier
+                        .padding(paddingValues)
+                        .background(color = Color(0xFF121221))
+                ) {
+                    SearchBar(
+                        query = query,
+                        onQueryChanged = { queryChanged -> query = queryChanged }
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    when (schedule) {
+                        is UiState.Loading -> {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(color = Color.White)
+                            }
+                        }
+
+                        is UiState.Success -> {
+                            val episodes = (schedule as UiState.Success<List<Episode>>).data
+                            val queryFilter =
+                                if (query.isNotBlank())
+                                    episodes.filter { ep ->
+                                        ep.show.name.lowercase().contains(
+                                            query.lowercase().trim()
+                                        ) || (ep.show.network != null && ep.show.network.name.lowercase()
+                                            .contains(query.lowercase().trim()))
+                                    } else episodes
+                            val (nowShows, nextShows) = segmentShowsByTime(
+                                queryFilter.filter { ep ->
+                                    ep.runtime != null && ep.airtime.isNotBlank()
+                                }
+                            )
+                            LazyColumn(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(horizontal = 16.dp)
+                            ) {
+                                item {
+                                    Text(
+                                        stringResource(id = R.string.schedule_now),
+                                        style = MaterialTheme.typography.headlineMedium.copy(color = Color.White),
+                                        modifier = Modifier.padding(vertical = 8.dp)
+                                    )
+                                }
+                                items(nowShows, key = { key -> key.id }) { show ->
+                                    ShowItem(show) {
+                                        scope.launch {
+                                            selectedShow = it
+                                            scaffoldState.bottomSheetState.expand()
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                }
+                                item {
+                                    Text(
+                                        stringResource(id = R.string.schedule_next),
+                                        style = MaterialTheme.typography.headlineMedium.copy(color = Color.White),
+                                        modifier = Modifier.padding(vertical = 8.dp)
+                                    )
+                                }
+                                items(nextShows, key = { key -> key.id }) { show ->
+                                    ShowItem(show) {
+                                        scope.launch {
+                                            selectedShow = it
+                                            scaffoldState.bottomSheetState.expand()
+                                        }
+                                    }
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                }
+                            }
+                        }
+
+                        is UiState.Error -> {
+                            val error = schedule as UiState.Error
+                            val errorMessage = stringResource(id = R.string.error, error.message)
+                            LaunchedEffect(snackBarHostState) {
+                                snackBarHostState.showSnackbar(errorMessage)
+                            }
                         }
                     }
                 }
