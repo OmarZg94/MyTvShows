@@ -5,6 +5,7 @@
     <string name="schedule_search_bar_hint">Search for a show or channel</string>
     <string name="schedule_now">Now</string>
     <string name="schedule_next">Next</string>
+    <string name="schedule_for">Schedule for: %s</string>
 
     <string name="genres">Genres</string>
     <string name="airing_time">Airing time</string>

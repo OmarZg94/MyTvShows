@@ -1,5 +1,6 @@
 package com.omarzg94.mytvshows.ui.view
 
+import android.icu.util.Calendar
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -50,12 +51,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import com.omarzg94.mytvshows.R
 import com.omarzg94.mytvshows.data.model.Episode
-import com.omarzg94.mytvshows.data.model.Show
 import com.omarzg94.mytvshows.data.model.UiState
 import com.omarzg94.mytvshows.ui.viewmodel.ShowViewModel
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun ShowListScreen() {
@@ -69,6 +72,20 @@ fun ShowListScreen() {
     var query by remember { mutableStateOf("") }
     var selectedShow by remember { mutableStateOf<Episode?>(null) }
     var showBottomSheet by remember { mutableStateOf(false) }
+    var selectedDate by remember { mutableStateOf(showViewModel.currentDate) }
+
+    val datePickerDialog = rememberDatePickerDialog { year, month, day ->
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.YEAR, year)
+            set(Calendar.MONTH, month)
+            set(Calendar.DAY_OF_MONTH, day)
+        }
+        selectedDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.time)
+    }
+
+    if (selectedDate.isNotEmpty()) {
+        showViewModel.fetchSchedule(selectedDate)
+    }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackBarHostState) },
@@ -77,7 +94,7 @@ fun ShowListScreen() {
                 modifier = Modifier.background(color = Color(0xFF121221)),
                 title = { Text(stringResource(id = R.string.schedule_title), color = Color.White) },
                 actions = {
-                    IconButton(onClick = { /* Handle calendar icon click */ }) {
+                    IconButton(onClick = { datePickerDialog.show() }) {
                         Icon(Icons.Default.DateRange, contentDescription = null, tint = Color.White)
                     }
                 }
@@ -115,47 +132,75 @@ fun ShowListScreen() {
                                         ) || (ep.show.network != null && ep.show.network.name.lowercase()
                                             .contains(query.lowercase().trim()))
                                     } else episodes
-                            val (nowShows, nextShows) = segmentShowsByTime(
-                                queryFilter.filter { ep ->
-                                    ep.runtime != null && ep.airtime.isNotBlank()
-                                }
+                            val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(
+                                Date()
                             )
+                            val isToday = selectedDate == today
+                            val filteredShows = if (isToday) {
+                                val (nowShows, nextShows) = segmentShowsByTime(
+                                    queryFilter.filter { ep ->
+                                        ep.runtime != null && ep.airtime.isNotBlank()
+                                    }
+                                )
+                                Pair(nowShows, nextShows)
+                            } else {
+                                Pair(queryFilter, emptyList())
+                            }
                             LazyColumn(
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .padding(horizontal = 16.dp)
                             ) {
-                                item {
-                                    Text(
-                                        stringResource(id = R.string.schedule_now),
-                                        style = MaterialTheme.typography.headlineMedium.copy(color = Color.White),
-                                        modifier = Modifier.padding(vertical = 8.dp)
-                                    )
-                                }
-                                items(nowShows, key = { key -> key.id }) { show ->
-                                    ShowItem(show) {
-                                        scope.launch {
-                                            selectedShow = it
-                                            showBottomSheet = true
-                                        }
+                                if (isToday) {
+                                    item {
+                                        Text(
+                                            stringResource(id = R.string.schedule_now),
+                                            style = MaterialTheme.typography.headlineMedium.copy(color = Color.White),
+                                            modifier = Modifier.padding(vertical = 8.dp)
+                                        )
                                     }
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                }
-                                item {
-                                    Text(
-                                        stringResource(id = R.string.schedule_next),
-                                        style = MaterialTheme.typography.headlineMedium.copy(color = Color.White),
-                                        modifier = Modifier.padding(vertical = 8.dp)
-                                    )
-                                }
-                                items(nextShows, key = { key -> key.id }) { show ->
-                                    ShowItem(show) {
-                                        scope.launch {
-                                            selectedShow = it
-                                            showBottomSheet = true
+                                    items(filteredShows.first, key = { key -> key.id }) { show ->
+                                        ShowItem(show) {
+                                            scope.launch {
+                                                selectedShow = it
+                                                showBottomSheet = true
+                                            }
                                         }
+                                        Spacer(modifier = Modifier.height(8.dp))
                                     }
-                                    Spacer(modifier = Modifier.height(8.dp))
+                                    item {
+                                        Text(
+                                            stringResource(id = R.string.schedule_next),
+                                            style = MaterialTheme.typography.headlineMedium.copy(color = Color.White),
+                                            modifier = Modifier.padding(vertical = 8.dp)
+                                        )
+                                    }
+                                    items(filteredShows.second, key = { key -> key.id }) { show ->
+                                        ShowItem(show) {
+                                            scope.launch {
+                                                selectedShow = it
+                                                showBottomSheet = true
+                                            }
+                                        }
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                    }
+                                } else {
+                                    item {
+                                        Text(
+                                            stringResource(id = R.string.schedule_for, selectedDate),
+                                            style = MaterialTheme.typography.headlineMedium.copy(color = Color.White),
+                                            modifier = Modifier.padding(vertical = 8.dp)
+                                        )
+                                    }
+                                    items(filteredShows.first, key = { key -> key.id }) { show ->
+                                        ShowItem(show) {
+                                            scope.launch {
+                                                selectedShow = it
+                                                showBottomSheet = true
+                                            }
+                                        }
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                    }
                                 }
                             }
                         }
@@ -187,70 +232,7 @@ fun ShowListScreen() {
     )
 }
 
-@Composable
-fun SearchBar(
-    modifier: Modifier = Modifier,
-    query: String,
-    onQueryChanged: (String) -> Unit
-) {
-    TextField(
-        value = query,
-        onValueChange = onQueryChanged,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        placeholder = { Text(stringResource(id = R.string.schedule_search_bar_hint)) },
-        leadingIcon = {
-            Icon(Icons.Default.Search, contentDescription = null)
-        },
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,
-            unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer
-        )
-    )
-}
-
-@Composable
-fun ShowItem(episode: Episode, onShowSelected: (Episode) -> Unit) {
-    with(episode) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onShowSelected(episode) },
-            colors = CardDefaults.cardColors(containerColor = Color.Transparent)
-        ) {
-            Row(
-                modifier = Modifier.padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                show.image?.medium?.let {
-                    Image(
-                        painter = rememberAsyncImagePainter(model = it),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(70.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Column {
-                    Text(
-                        text = show.name,
-                        style = MaterialTheme.typography.titleSmall.copy(color = Color.White)
-                    )
-                    val formatter = DateTimeFormatter.ofPattern("HH:mm")
-                    val startTime = LocalTime.parse(episode.airtime, formatter)
-                    val endTime = startTime.plusMinutes(episode.runtime!!.toLong())
-                    Text(
-                        text = "${startTime.format(formatter)} - ${endTime.format(formatter)}",
-                        style = MaterialTheme.typography.bodyMedium.copy(color = Color(0xFF9494C7))
-                    )
-                }
-            }
-        }
-    }
-}
-
-fun segmentShowsByTime(episodes: List<Episode>): Pair<List<Episode>, List<Episode>> {
+private fun segmentShowsByTime(episodes: List<Episode>): Pair<List<Episode>, List<Episode>> {
     val now = LocalTime.now()
     val formatter = DateTimeFormatter.ofPattern("HH:mm")
 

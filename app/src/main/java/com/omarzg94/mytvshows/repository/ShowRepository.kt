@@ -11,22 +11,9 @@ import javax.inject.Inject
 class ShowRepository @Inject constructor(
     private val tvMazeService: TvMazeService
 ) {
-    suspend fun getSchedule(): Either<NetworkResult.Error, NetworkResult.Success<List<Episode>>> {
+    suspend fun getSchedule(date: String): Either<NetworkResult.Error, NetworkResult.Success<List<Episode>>> {
         return try {
-            val response = tvMazeService.getSchedule()
-            if (response.isSuccessful) {
-                Either.Right(NetworkResult.Success(response.body()!!))
-            } else {
-                Either.Left(NetworkResult.HttpError(response.code()))
-            }
-        } catch (e: IOException) {
-            Either.Left(NetworkResult.NetworkError)
-        }
-    }
-
-    suspend fun getShowDetails(id: Int): Either<NetworkResult.Error, NetworkResult.Success<Show>> {
-        return try {
-            val response = tvMazeService.getShowDetails(id)
+            val response = tvMazeService.getSchedule(date)
             if (response.isSuccessful) {
                 Either.Right(NetworkResult.Success(response.body()!!))
             } else {
