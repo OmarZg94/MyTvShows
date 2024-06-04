@@ -3,7 +3,6 @@ package com.omarzg94.mytvshows.ui.view
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,13 +18,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -33,8 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.rememberBottomSheetScaffoldState
-import androidx.compose.material3.rememberStandardBottomSheetState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -46,7 +44,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -65,15 +62,15 @@ fun ShowListScreen() {
     val scope = rememberCoroutineScope()
     val showViewModel: ShowViewModel = hiltViewModel()
     val schedule by showViewModel.schedule.collectAsState()
-    val scaffoldState = rememberBottomSheetScaffoldState(
-        bottomSheetState = rememberStandardBottomSheetState(skipHiddenState = false)
+    val sheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
     )
     val snackBarHostState = remember { SnackbarHostState() }
     var query by remember { mutableStateOf("") }
-    var selectedShow by remember { mutableStateOf<Show?>(null) }
+    var selectedShow by remember { mutableStateOf<Episode?>(null) }
+    var showBottomSheet by remember { mutableStateOf(false) }
 
-    BottomSheetScaffold(
-        scaffoldState = scaffoldState,
+    Scaffold(
         snackbarHost = { SnackbarHost(snackBarHostState) },
         topBar = {
             TopAppBar(
@@ -86,24 +83,8 @@ fun ShowListScreen() {
                 }
             )
         },
-        sheetContent = {
-            selectedShow?.let {
-                ShowDetailContent(it)
-            }
-        },
-        sheetPeekHeight = 0.dp,
         content = {
-            Scaffold(modifier = Modifier
-                .padding(it)
-                .pointerInput(Unit) {
-                    detectTapGestures(onTap = {
-                        scope.launch {
-                            if (scaffoldState.bottomSheetState.isVisible) {
-                                scaffoldState.bottomSheetState.hide()
-                            }
-                        }
-                    })
-                }) { paddingValues ->
+            Scaffold(modifier = Modifier.padding(it)) { paddingValues ->
                 Column(
                     modifier = Modifier
                         .padding(paddingValues)
@@ -155,7 +136,7 @@ fun ShowListScreen() {
                                     ShowItem(show) {
                                         scope.launch {
                                             selectedShow = it
-                                            scaffoldState.bottomSheetState.expand()
+                                            showBottomSheet = true
                                         }
                                     }
                                     Spacer(modifier = Modifier.height(8.dp))
@@ -171,7 +152,7 @@ fun ShowListScreen() {
                                     ShowItem(show) {
                                         scope.launch {
                                             selectedShow = it
-                                            scaffoldState.bottomSheetState.expand()
+                                            showBottomSheet = true
                                         }
                                     }
                                     Spacer(modifier = Modifier.height(8.dp))
@@ -185,6 +166,19 @@ fun ShowListScreen() {
                             LaunchedEffect(snackBarHostState) {
                                 snackBarHostState.showSnackbar(errorMessage)
                             }
+                        }
+                    }
+                }
+
+                if (showBottomSheet) {
+                    ModalBottomSheet(
+                        onDismissRequest = {
+                            showBottomSheet = false
+                        },
+                        sheetState = sheetState
+                    ) {
+                        selectedShow?.let { ep ->
+                            ShowDetailContent(episode = ep)
                         }
                     }
                 }
@@ -217,12 +211,12 @@ fun SearchBar(
 }
 
 @Composable
-fun ShowItem(episode: Episode, onShowSelected: (Show) -> Unit) {
+fun ShowItem(episode: Episode, onShowSelected: (Episode) -> Unit) {
     with(episode) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onShowSelected(show) },
+                .clickable { onShowSelected(episode) },
             colors = CardDefaults.cardColors(containerColor = Color.Transparent)
         ) {
             Row(
