@@ -6,6 +6,10 @@
     <string name="schedule_now">Now</string>
     <string name="schedule_next">Next</string>
 
+    <string name="genres">Genres</string>
+    <string name="airing_time">Airing time</string>
+    <string name="season_episode_format">Season %d, Episode %d</string>
+
     <string name="without_summary">Without summary</string>
     <string name="unknown_error">Unknown Error</string>
     <string name="error">Error: %s</string>
