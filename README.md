@@ -1,9 +1,9 @@
 
-# Brightcove Services - Mobile Coding Sample
+# My TV Shows - Mobile Coding Sample
 
 ## Project Overview
 
-The Brightcove Services mobile application is designed to showcase the capabilities of a clean, simple mobile app using the TVMaze API to display a television schedule of currently airing programs in the US. The application is built with the MVVM (Model-View-ViewModel) architecture to ensure a robust, flexible, and reusable codebase that can be easily expanded for future projects and customer requirements.
+The My Tv Shows mobile application is designed to showcase the capabilities of a clean, simple mobile app using the TVMaze API to display a television schedule of currently airing programs in the US. The application is built with the MVVM (Model-View-ViewModel) architecture to ensure a robust, flexible, and reusable codebase that can be easily expanded for future projects and customer requirements.
 
 ## Features
 
