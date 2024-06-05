@@ -7,9 +7,9 @@ import androidx.compose.ui.graphics.Color
 
 private val DarkColorPalette = darkColorScheme(
     primary = Color.White,
-    secondary = Color(0xFF9494C7),
-    background = Color(0xFF242447),
-    surface = Color(0xFF121221),
+    secondary = secondaryColor,
+    background = searchBarBackground,
+    surface = screenBackground,
     onPrimary = Color.Black,
     onSecondary = Color.Black,
     onBackground = Color.White,

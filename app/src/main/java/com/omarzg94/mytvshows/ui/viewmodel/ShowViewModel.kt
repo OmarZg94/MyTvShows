@@ -6,6 +6,7 @@ import com.omarzg94.mytvshows.data.model.Episode
 import com.omarzg94.mytvshows.data.model.UiState
 import com.omarzg94.mytvshows.repository.ShowRepository
 import com.omarzg94.mytvshows.utils.Constants.UNKNOWN_ERROR
+import com.omarzg94.mytvshows.utils.Constants.YEAR_MONTH_DAY_FORMAT
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,7 +29,10 @@ class ShowViewModel @Inject constructor(
 
 
     init {
-        currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Calendar.getInstance().time)
+        currentDate = SimpleDateFormat(
+            YEAR_MONTH_DAY_FORMAT,
+            Locale.getDefault()
+        ).format(Calendar.getInstance().time)
         fetchSchedule(currentDate)
     }
 

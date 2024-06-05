@@ -12,8 +12,8 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import com.omarzg94.mytvshows.R
+import com.omarzg94.mytvshows.utils.Constants.NormalPadding
 
 @Composable
 fun SearchBar(
@@ -26,10 +26,13 @@ fun SearchBar(
         onValueChange = onQueryChanged,
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = NormalPadding),
         placeholder = { Text(stringResource(id = R.string.schedule_search_bar_hint)) },
         leadingIcon = {
-            Icon(Icons.Default.Search, contentDescription = null)
+            Icon(
+                Icons.Default.Search,
+                contentDescription = stringResource(id = R.string.schedule_search_bar_hint)
+            )
         },
         colors = TextFieldDefaults.colors(
             focusedContainerColor = MaterialTheme.colorScheme.primaryContainer,

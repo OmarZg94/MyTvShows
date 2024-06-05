@@ -1,5 +1,6 @@
 package com.omarzg94.mytvshows.ui.view
 
+import android.app.DatePickerDialog
 import android.icu.util.Calendar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -18,6 +19,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -29,19 +31,22 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.omarzg94.mytvshows.R
 import com.omarzg94.mytvshows.data.model.Episode
 import com.omarzg94.mytvshows.data.model.UiState
+import com.omarzg94.mytvshows.ui.theme.screenBackground
 import com.omarzg94.mytvshows.ui.viewmodel.ShowViewModel
-import kotlinx.coroutines.launch
+import com.omarzg94.mytvshows.utils.Constants.EMPTY
+import com.omarzg94.mytvshows.utils.Constants.HOUR_MINUTE_FORMAT
+import com.omarzg94.mytvshows.utils.Constants.NormalPadding
+import com.omarzg94.mytvshows.utils.Constants.SmallPadding
+import com.omarzg94.mytvshows.utils.Constants.YEAR_MONTH_DAY_FORMAT
 import java.text.SimpleDateFormat
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
@@ -49,18 +54,15 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
-private const val TWO_WEEKS : Long = 14
+private const val TWO_WEEKS: Long = 14
 
 @Composable
 fun ShowListScreen() {
-    val scope = rememberCoroutineScope()
     val showViewModel: ShowViewModel = hiltViewModel()
     val schedule by showViewModel.schedule.collectAsState()
-    val sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = true
-    )
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val snackBarHostState = remember { SnackbarHostState() }
-    var query by remember { mutableStateOf("") }
+    var query by remember { mutableStateOf(EMPTY) }
     var selectedShow by remember { mutableStateOf<Episode?>(null) }
     var showBottomSheet by remember { mutableStateOf(false) }
     var selectedDate by remember { mutableStateOf(showViewModel.currentDate) }
@@ -76,177 +78,169 @@ fun ShowListScreen() {
                 set(Calendar.MONTH, month)
                 set(Calendar.DAY_OF_MONTH, day)
             }
-            selectedDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.time)
+            selectedDate =
+                SimpleDateFormat(YEAR_MONTH_DAY_FORMAT, Locale.getDefault()).format(calendar.time)
         },
         minDate = minDate,
         maxDate = maxDate
     )
 
-    if (selectedDate.isNotEmpty()) {
-        showViewModel.fetchSchedule(selectedDate)
+    LaunchedEffect(selectedDate) {
+        if (selectedDate.isNotEmpty()) {
+            showViewModel.fetchSchedule(selectedDate)
+        }
     }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackBarHostState) },
         topBar = {
-            TopAppBar(
-                modifier = Modifier.background(color = Color(0xFF121221)),
-                title = { Text(stringResource(id = R.string.schedule_title), color = Color.White) },
-                actions = {
-                    IconButton(onClick = { datePickerDialog.show() }) {
-                        Icon(Icons.Default.DateRange, contentDescription = null, tint = Color.White)
-                    }
-                }
-            )
+            ShowListTopBar(datePickerDialog)
         },
         content = {
-            Scaffold(modifier = Modifier.padding(it)) { paddingValues ->
-                Column(
-                    modifier = Modifier
-                        .padding(paddingValues)
-                        .background(color = Color(0xFF121221))
-                ) {
-                    SearchBar(
-                        query = query,
-                        onQueryChanged = { queryChanged -> query = queryChanged }
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    when (schedule) {
-                        is UiState.Loading -> {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator(color = Color.White)
-                            }
-                        }
+            ShowListContent(
+                schedule = schedule,
+                query = query,
+                onQueryChanged = { query = it },
+                selectedDate = selectedDate,
+                onShowSelected = { show ->
+                    selectedShow = show
+                    showBottomSheet = true
+                },
+                snackBarHostState = snackBarHostState,
+                showBottomSheet = showBottomSheet,
+                sheetState = sheetState,
+                selectedShow = selectedShow,
+                onBottomSheetDismiss = { showBottomSheet = false }
+            )
+        }
+    )
+}
 
-                        is UiState.Success -> {
-                            val episodes = (schedule as UiState.Success<List<Episode>>).data
-                            val queryFilter =
-                                if (query.isNotBlank())
-                                    episodes.filter { ep ->
-                                        ep.show.name.lowercase().contains(
-                                            query.lowercase().trim()
-                                        ) || (ep.show.network != null && ep.show.network.name.lowercase()
-                                            .contains(query.lowercase().trim()))
-                                    } else episodes
-                            val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(
-                                Date()
-                            )
-                            val isToday = selectedDate == today
-                            val filteredShows = if (isToday) {
-                                val (nowShows, nextShows) = segmentShowsByTime(
-                                    queryFilter.filter { ep ->
-                                        ep.runtime != null && ep.airtime.isNotBlank()
-                                    }
-                                )
-                                Pair(nowShows, nextShows)
-                            } else {
-                                Pair(queryFilter, emptyList())
-                            }
-                            LazyColumn(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(horizontal = 16.dp)
-                            ) {
-                                if (isToday) {
-                                    item {
-                                        Text(
-                                            stringResource(id = R.string.schedule_now),
-                                            style = MaterialTheme.typography.headlineMedium.copy(
-                                                color = Color.White
-                                            ),
-                                            modifier = Modifier.padding(vertical = 8.dp)
-                                        )
-                                    }
-                                    items(filteredShows.first, key = { key -> key.id }) { show ->
-                                        ShowItem(show) {
-                                            scope.launch {
-                                                selectedShow = it
-                                                showBottomSheet = true
-                                            }
-                                        }
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                    }
-                                    item {
-                                        Text(
-                                            stringResource(id = R.string.schedule_next),
-                                            style = MaterialTheme.typography.headlineMedium.copy(
-                                                color = Color.White
-                                            ),
-                                            modifier = Modifier.padding(vertical = 8.dp)
-                                        )
-                                    }
-                                    items(filteredShows.second, key = { key -> key.id }) { show ->
-                                        ShowItem(show) {
-                                            scope.launch {
-                                                selectedShow = it
-                                                showBottomSheet = true
-                                            }
-                                        }
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                    }
-                                } else {
-                                    item {
-                                        Text(
-                                            stringResource(
-                                                id = R.string.schedule_for,
-                                                selectedDate
-                                            ),
-                                            style = MaterialTheme.typography.headlineMedium.copy(
-                                                color = Color.White
-                                            ),
-                                            modifier = Modifier.padding(vertical = 8.dp)
-                                        )
-                                    }
-                                    items(filteredShows.first, key = { key -> key.id }) { show ->
-                                        ShowItem(show) {
-                                            scope.launch {
-                                                selectedShow = it
-                                                showBottomSheet = true
-                                            }
-                                        }
-                                        Spacer(modifier = Modifier.height(8.dp))
-                                    }
-                                }
-                            }
-                        }
-
-                        is UiState.Error -> {
-                            val error = schedule as UiState.Error
-                            val errorMessage = stringResource(id = R.string.error, error.message)
-                            LaunchedEffect(snackBarHostState) {
-                                snackBarHostState.showSnackbar(errorMessage)
-                            }
-                        }
-                    }
-                }
-
-                if (showBottomSheet) {
-                    ModalBottomSheet(
-                        onDismissRequest = {
-                            showBottomSheet = false
-                        },
-                        sheetState = sheetState
-                    ) {
-                        selectedShow?.let { ep ->
-                            ShowDetailContent(episode = ep)
-                        }
-                    }
-                }
+@Composable
+fun ShowListTopBar(datePickerDialog: DatePickerDialog) {
+    TopAppBar(
+        modifier = Modifier.background(color = screenBackground),
+        title = { Text(stringResource(id = R.string.schedule_title), color = Color.White) },
+        actions = {
+            IconButton(onClick = { datePickerDialog.show() }) {
+                Icon(Icons.Default.DateRange, contentDescription = null, tint = Color.White)
             }
         }
     )
 }
 
+@Composable
+fun ShowListContent(
+    schedule: UiState<List<Episode>>,
+    query: String,
+    onQueryChanged: (String) -> Unit,
+    selectedDate: String,
+    onShowSelected: (Episode) -> Unit,
+    snackBarHostState: SnackbarHostState,
+    showBottomSheet: Boolean,
+    sheetState: SheetState,
+    selectedShow: Episode?,
+    onBottomSheetDismiss: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = screenBackground)
+    ) {
+        SearchBar(
+            query = query,
+            onQueryChanged = onQueryChanged
+        )
+        Spacer(modifier = Modifier.height(NormalPadding))
+        when (schedule) {
+            is UiState.Loading -> LoadingIndicator()
+            is UiState.Success -> ShowList(
+                episodes = schedule.data,
+                query = query,
+                selectedDate = selectedDate,
+                onShowSelected = onShowSelected
+            )
+
+            is UiState.Error -> {
+                val errorMessage = stringResource(id = R.string.error, schedule.message)
+                LaunchedEffect(snackBarHostState) {
+                    snackBarHostState.showSnackbar(errorMessage)
+                }
+            }
+        }
+    }
+
+    if (showBottomSheet) {
+        ModalBottomSheet(
+            onDismissRequest = onBottomSheetDismiss,
+            sheetState = sheetState
+        ) {
+            selectedShow?.let { ShowDetailContent(episode = it) }
+        }
+    }
+}
+
+@Composable
+fun LoadingIndicator() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator(color = Color.White)
+    }
+}
+
+@Composable
+fun ShowList(
+    episodes: List<Episode>,
+    query: String,
+    selectedDate: String,
+    onShowSelected: (Episode) -> Unit
+) {
+    val queryFilter = episodes.filter {
+        it.show.name.contains(query, ignoreCase = true) ||
+                it.show.network?.name?.contains(query, ignoreCase = true) ?: false
+    }
+    val today = SimpleDateFormat(YEAR_MONTH_DAY_FORMAT, Locale.getDefault()).format(Date())
+    val isToday = selectedDate == today
+    val (nowShows, nextShows) = if (isToday) segmentShowsByTime(queryFilter) else Pair(
+        queryFilter,
+        emptyList()
+    )
+
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = NormalPadding)
+    ) {
+        if (isToday) {
+            item { SectionHeader(title = stringResource(id = R.string.schedule_now)) }
+            items(nowShows, key = { it.id }) { ShowItem(it, onShowSelected) }
+            item { SectionHeader(title = stringResource(id = R.string.schedule_next)) }
+            items(nextShows, key = { it.id }) { ShowItem(it, onShowSelected) }
+        } else {
+            item { SectionHeader(title = stringResource(id = R.string.schedule_for, selectedDate)) }
+            items(nowShows, key = { it.id }) { ShowItem(it, onShowSelected) }
+        }
+    }
+}
+
+@Composable
+fun SectionHeader(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.headlineMedium.copy(color = Color.White),
+        modifier = Modifier.padding(vertical = SmallPadding)
+    )
+}
+
 private fun segmentShowsByTime(episodes: List<Episode>): Pair<List<Episode>, List<Episode>> {
     val now = LocalTime.now()
-    val formatter = DateTimeFormatter.ofPattern("HH:mm")
+    val formatter = DateTimeFormatter.ofPattern(HOUR_MINUTE_FORMAT)
 
     val nowShows = episodes.filter { episode ->
         val showTime = LocalTime.parse(episode.airtime, formatter)
-        showTime.isBefore(now) && showTime.plusMinutes(episode.runtime!!.toLong()).isAfter(now)
+        showTime.isBefore(now) && showTime.plusMinutes(episode.runtime?.toLong() ?: 0).isAfter(now)
     }
     val nextShows = episodes.filter { episode ->
         val showTime = LocalTime.parse(episode.airtime, formatter)
