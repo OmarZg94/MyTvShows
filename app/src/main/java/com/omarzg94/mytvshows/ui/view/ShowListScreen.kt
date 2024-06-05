@@ -1,26 +1,17 @@
 package com.omarzg94.mytvshows.ui.view
 
 import android.icu.util.Calendar
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,8 +21,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -48,7 +37,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.compose.rememberAsyncImagePainter
 import com.omarzg94.mytvshows.R
 import com.omarzg94.mytvshows.data.model.Episode
 import com.omarzg94.mytvshows.data.model.UiState
@@ -59,6 +47,9 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.TimeUnit
+
+private const val TWO_WEEKS : Long = 14
 
 @Composable
 fun ShowListScreen() {
@@ -74,14 +65,22 @@ fun ShowListScreen() {
     var showBottomSheet by remember { mutableStateOf(false) }
     var selectedDate by remember { mutableStateOf(showViewModel.currentDate) }
 
-    val datePickerDialog = rememberDatePickerDialog { year, month, day ->
-        val calendar = Calendar.getInstance().apply {
-            set(Calendar.YEAR, year)
-            set(Calendar.MONTH, month)
-            set(Calendar.DAY_OF_MONTH, day)
-        }
-        selectedDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.time)
-    }
+    val calendar = Calendar.getInstance()
+    val minDate = calendar.timeInMillis - TimeUnit.DAYS.toMillis(TWO_WEEKS)
+    val maxDate = calendar.timeInMillis + TimeUnit.DAYS.toMillis(TWO_WEEKS)
+
+    val datePickerDialog = rememberDatePickerDialog(
+        onDateSet = { year, month, day ->
+            calendar.apply {
+                set(Calendar.YEAR, year)
+                set(Calendar.MONTH, month)
+                set(Calendar.DAY_OF_MONTH, day)
+            }
+            selectedDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.time)
+        },
+        minDate = minDate,
+        maxDate = maxDate
+    )
 
     if (selectedDate.isNotEmpty()) {
         showViewModel.fetchSchedule(selectedDate)
@@ -155,7 +154,9 @@ fun ShowListScreen() {
                                     item {
                                         Text(
                                             stringResource(id = R.string.schedule_now),
-                                            style = MaterialTheme.typography.headlineMedium.copy(color = Color.White),
+                                            style = MaterialTheme.typography.headlineMedium.copy(
+                                                color = Color.White
+                                            ),
                                             modifier = Modifier.padding(vertical = 8.dp)
                                         )
                                     }
@@ -171,7 +172,9 @@ fun ShowListScreen() {
                                     item {
                                         Text(
                                             stringResource(id = R.string.schedule_next),
-                                            style = MaterialTheme.typography.headlineMedium.copy(color = Color.White),
+                                            style = MaterialTheme.typography.headlineMedium.copy(
+                                                color = Color.White
+                                            ),
                                             modifier = Modifier.padding(vertical = 8.dp)
                                         )
                                     }
@@ -187,8 +190,13 @@ fun ShowListScreen() {
                                 } else {
                                     item {
                                         Text(
-                                            stringResource(id = R.string.schedule_for, selectedDate),
-                                            style = MaterialTheme.typography.headlineMedium.copy(color = Color.White),
+                                            stringResource(
+                                                id = R.string.schedule_for,
+                                                selectedDate
+                                            ),
+                                            style = MaterialTheme.typography.headlineMedium.copy(
+                                                color = Color.White
+                                            ),
                                             modifier = Modifier.padding(vertical = 8.dp)
                                         )
                                     }

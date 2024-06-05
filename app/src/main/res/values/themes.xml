@@ -2,4 +2,10 @@
 <resources>
 
     <style name="Theme.MyTvShows" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="DatePickerTheme" parent="android:Theme.Material.Dialog">
+        <item name="android:colorBackground">@color/search_bar_background_color</item>
+        <item name="android:colorSecondary">@color/search_bar_background_color</item>
+        <item name="android:colorPrimary">@color/header_color</item>
+    </style>
 </resources>
