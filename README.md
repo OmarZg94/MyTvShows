@@ -46,9 +46,9 @@ The application follows the MVVM architecture pattern, which separates the UI (V
 ## Installation and Setup
 
 1. **Clone the repository**:
-    \`\`\`sh
-    git clone <repository-url>
-    \`\`\`
+    ```sh
+    git clone <https://github.com/OmarZg94/MyTvShows.git>
+    ```
 
 2. **Open the project in Android Studio**:
     - Open Android Studio.
@@ -65,6 +65,36 @@ The application follows the MVVM architecture pattern, which separates the UI (V
 - **Select Date**: Click on the calendar icon in the top bar to open a date picker and select a different date.
 - **Search**: Use the search bar to filter TV shows or channels by name.
 - **View Show Details**: Click on a show to view its detailed information in a bottom sheet dialog.
+
+## Instrumented Tests
+
+Instrumented tests are used to verify the behavior of the application in a real device or emulator environment. These tests help ensure the app works as expected under various conditions and user interactions.
+
+### Running Instrumented Tests
+
+To run the instrumented tests:
+
+1. **Open the project in Android Studio**.
+2. **Select the `androidTest` directory** in the Project view.
+3. **Right-click on the directory** and choose **"Run Tests in 'androidTest'"**.
+
+### Example Instrumented Tests
+
+Below are examples of the instrumented tests included in the project:
+
+- **SearchBarTest**: Tests the behavior of the `SearchBar` composable.
+    - Verifies the placeholder text is displayed correctly.
+    - Verifies the search query text is updated correctly.
+    - Verifies the leading icon is displayed.
+    - Verifies the `onQueryChanged` callback is triggered with the correct value.
+
+- **ShowItemTest**: Tests the behavior of the `ShowItem` composable.
+    - Verifies the show name is displayed correctly.
+    - Verifies the airtime is displayed correctly.
+    - Verifies the image is displayed when available.
+    - Verifies the click event is handled correctly.
+    - Verifies the `ShowItem` handles cases where no image is provided.
+    - Verifies the airtime is displayed correctly for different formats.
 
 ## Design Decisions
 

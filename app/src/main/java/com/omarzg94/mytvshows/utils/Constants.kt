@@ -28,4 +28,8 @@ object Constants {
     val NormalPlusPadding = 24.dp
     val MediumPlusPadding = 70.dp
     val LargePadding = 200.dp
+
+    /* Test tags */
+    const val SEARCH_BAR_TT = "SearchBar"
+    const val EPISODE_IMAGE_TT = "EpisodeImage"
 }

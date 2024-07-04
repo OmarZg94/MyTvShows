@@ -22,7 +22,7 @@ sealed class NetworkResult<out T> {
     data object NetworkError : Error(NETWORK_ERROR)
 }
 
-internal enum class HttpErrorStatus(val code: Int, val message: String) {
+enum class HttpErrorStatus(val code: Int, val message: String) {
     DEFAULT(0, UNKNOWN_ERROR),
     HTTP_204(204, NO_CONTENT),
     HTTP_400(400, BAD_REQUEST),

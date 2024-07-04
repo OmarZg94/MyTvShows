@@ -2,7 +2,13 @@ package com.omarzg94.mytvshows.ui.view
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -11,9 +17,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import coil.compose.rememberAsyncImagePainter
 import com.omarzg94.mytvshows.data.model.Episode
 import com.omarzg94.mytvshows.ui.theme.secondaryColor
+import com.omarzg94.mytvshows.utils.Constants.EPISODE_IMAGE_TT
 import com.omarzg94.mytvshows.utils.Constants.HOUR_MINUTE_FORMAT
 import com.omarzg94.mytvshows.utils.Constants.MediumPlusPadding
 import com.omarzg94.mytvshows.utils.Constants.SmallPadding
@@ -46,7 +54,9 @@ fun EpisodeImage(imageUrl: String?) {
         Image(
             painter = rememberAsyncImagePainter(model = it),
             contentDescription = null,
-            modifier = Modifier.size(MediumPlusPadding)
+            modifier = Modifier
+                .size(MediumPlusPadding)
+                .testTag(EPISODE_IMAGE_TT)
         )
     }
 }
