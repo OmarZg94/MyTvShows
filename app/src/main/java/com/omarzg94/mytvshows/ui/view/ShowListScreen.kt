@@ -5,6 +5,7 @@ import android.icu.util.Calendar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -96,8 +97,9 @@ fun ShowListScreen() {
         topBar = {
             ShowListTopBar(datePickerDialog)
         },
-        content = {
+        content = { padding ->
             ShowListContent(
+                padding = padding,
                 schedule = schedule,
                 query = query,
                 onQueryChanged = { query = it },
@@ -140,10 +142,12 @@ fun ShowListContent(
     showBottomSheet: Boolean,
     sheetState: SheetState,
     selectedShow: Episode?,
-    onBottomSheetDismiss: () -> Unit
+    onBottomSheetDismiss: () -> Unit,
+    padding: PaddingValues
 ) {
     Column(
         modifier = Modifier
+            .padding(padding)
             .fillMaxSize()
             .background(color = screenBackground)
     ) {
