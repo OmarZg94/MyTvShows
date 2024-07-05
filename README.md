@@ -47,7 +47,7 @@ The application follows the MVVM architecture pattern, which separates the UI (V
 
 1. **Clone the repository**:
     ```sh
-    git clone <https://github.com/OmarZg94/MyTvShows.git>
+    git clone https://github.com/OmarZg94/MyTvShows.git
     ```
 
 2. **Open the project in Android Studio**:
