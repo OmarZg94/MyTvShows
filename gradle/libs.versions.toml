@@ -20,6 +20,7 @@ okHttp = "4.12.0"
 arrowVersion = "1.0.1"
 coilVersion = "2.4.0"
 mockitoVersion = "4.0.0"
+mockitoInline = "5.2.0"
 
 [libraries]
 jetbrains-kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "coroutinesVersion" }
@@ -54,6 +55,7 @@ google-dagger-compiler = { group = "com.google.dagger", name = "hilt-android-com
 io-arrow-kt = { group = "io.arrow-kt", name = "arrow-core", version.ref = "arrowVersion" }
 io-coil-kt = { group = "io.coil-kt", name = "coil-compose", version.ref = "coilVersion" }
 mockito = { group = "org.mockito.kotlin", name = "mockito-kotlin", version.ref = "mockitoVersion" }
+mockito-inline = { group = "org.mockito", name = "mockito-inline", version.ref = "mockitoInline"}
 
 
 [plugins]
