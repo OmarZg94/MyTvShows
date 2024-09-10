@@ -78,7 +78,7 @@ To run the instrumented tests:
 2. **Select the `androidTest` directory** in the Project view.
 3. **Right-click on the directory** and choose **"Run Tests in 'androidTest'"**.
 
-### Instrumented Tests
+### Example Instrumented Tests
 
 Below are examples of the instrumented tests included in the project:
 
