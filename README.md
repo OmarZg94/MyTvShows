@@ -146,7 +146,6 @@ Coil was selected for its seamless integration with Jetpack Compose and efficien
 
 - **Pagination**: Implement pagination to handle large datasets efficiently.
 - **Offline Support**: Add offline support to cache data and allow the app to function without an active internet connection.
-- **Unit Tests**: Increase test coverage, particularly for ViewModel and Repository layers, to ensure robustness.
 - **Additional Features**: Expand the app's functionality based on user feedback and new customer requirements.
 
 ## Conclusion
