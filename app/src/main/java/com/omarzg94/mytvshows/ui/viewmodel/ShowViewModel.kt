@@ -33,7 +33,6 @@ class ShowViewModel @Inject constructor(
             YEAR_MONTH_DAY_FORMAT,
             Locale.getDefault()
         ).format(Calendar.getInstance().time)
-        fetchSchedule(currentDate)
     }
 
     fun fetchSchedule(date: String) {
