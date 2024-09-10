@@ -78,7 +78,7 @@ To run the instrumented tests:
 2. **Select the `androidTest` directory** in the Project view.
 3. **Right-click on the directory** and choose **"Run Tests in 'androidTest'"**.
 
-### Example Instrumented Tests
+### Instrumented Tests
 
 Below are examples of the instrumented tests included in the project:
 
@@ -95,6 +95,19 @@ Below are examples of the instrumented tests included in the project:
     - Verifies the click event is handled correctly.
     - Verifies the `ShowItem` handles cases where no image is provided.
     - Verifies the airtime is displayed correctly for different formats.
+
+## Unit Tests
+
+Below are examples of the unit tests included in the project:
+
+- **fetchSchedule returns success**:
+    - Tests that the `ShowViewModel` successfully fetches the schedule for a specific date from the repository.
+    - Verifies that the correct list of `Episode` objects is returned and the UI state is updated to `Success`.
+
+- **fetchSchedule returns error**:
+    - Tests that the `ShowViewModel` handles an error response when fetching the schedule.
+    - Verifies that the UI state is updated to `Error` with the appropriate error message when the repository returns an error.
+
 
 ## Design Decisions
 
